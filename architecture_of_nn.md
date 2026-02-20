@@ -1,15 +1,15 @@
 # Neural Network Architecture for MNIST Digit Recognition
 
 ## Overview
-This document explains the neural network architecture for classifying MNIST handwritten digits using the 1000 images and labels extracted from the dataset.
+This document explains the neural network architecture used in the comprehensive comparison between NumPy and PyTorch implementations for MNIST digit classification. The study includes 5 different model configurations trained on 1000 images with consistent evaluation metrics.
 
 ## Network Architecture
 
 ### Architecture Diagram
 The neural network architecture can be visualized using the Python code in the notebook. To generate the diagram:
 
-1. Open the `unzip_archive.ipynb` notebook
-2. Run **Cell 13** (VISUALIZE NEURAL NETWORK ARCHITECTURE FOR MNIST)
+1. Open the `mnist_neural_network_complete.ipynb` notebook
+2. Run **Cell 4** (Neural Network Architecture and Functions)
 3. The diagram will display:
    - **Input Layer**: 784 nodes (shown as sample of 20 nodes labeled P1-P784)
    - **Hidden Layer**: 128 nodes (shown as sample of 12 nodes labeled H1-H128)  
@@ -382,13 +382,80 @@ Output Layer (10 probabilities)
 
 This architecture represents an optimal balance between simplicity, performance, and educational value for the MNIST digit recognition task with 1000 training examples.
 
-## Training Process
+## Model Configurations
 
-1. **Forward Pass**: Input → Hidden → Output
-2. **Loss Calculation**: Compare predictions to true labels
-3. **Backward Pass**: Calculate gradients
-4. **Weight Updates**: Adjust W1 and W2 using gradients
-5. **Repeat**: Iterate over training data
+### Overview of 5 Model Variants
+This study compares 5 different model configurations to understand the impact of framework choice, batch size, and weight initialization:
+
+1. **NumPy Model (Backpropagation)**: Baseline implementation with batch size 1
+2. **PyTorch Model - Batch Size 1**: Direct framework comparison
+3. **PyTorch Model - Batch Size 32**: Standard batch training
+4. **PyTorch Model - Scaled Weights**: Optimized initialization
+5. **PyTorch Model - NumPy Weights**: Transfer learning test
+
+### Consistent Architecture Across All Models
+All 5 models share the same core architecture:
+- **Network Structure**: 784 → 128 → 10 neurons
+- **Activation Function**: Sigmoid (both hidden and output layers)
+- **Input Normalization**: Pixel values scaled to [0, 1]
+- **Training Epochs**: 100 with adaptive learning rate schedule
+- **Loss Function**: Mean Squared Error (MSE)
+
+### Key Differences Between Models
+
+#### 1. Training Methodology
+```python
+# NumPy & PyTorch Batch=1: Backpropagation
+for i in range(len(x_train)):  # 1000 updates per epoch
+    w1, w2 = backprop(x_train[i], y_train[i], w1, w2, lr)
+
+# PyTorch Batch=32: Standard batch training  
+for images, labels in train_loader:  # ~31 updates per epoch
+    # Process 32 samples together, then update
+```
+
+#### 2. Weight Initialization
+```python
+# Standard initialization (scale = 0.01)
+w1 = np.random.randn(784, 128) * 0.01
+w2 = np.random.randn(128, 10) * 0.01
+
+# Scaled initialization (scale = 0.1)  
+w1 = np.random.randn(784, 128) * 0.1
+w2 = np.random.randn(128, 10) * 0.1
+
+# NumPy transfer weights
+w1, w2 = numpy_trained_weights  # From trained NumPy model
+```
+
+#### 3. Framework Implementation
+- **NumPy**: Manual forward/backward pass, explicit gradient calculation
+- **PyTorch**: Automatic differentiation, optimized tensor operations
+
+### Performance Characteristics
+
+| Model | Training Method | Batch Size | Weight Scale | Key Feature |
+|-------|----------------|-----------|-------------|-------------|
+| NumPy (Backprop) | Backpropagation | 1 | 0.01 | Educational baseline |
+| PyTorch (Batch=1) | Backpropagation | 1 | 0.01 | Fair framework test |
+| PyTorch (Batch=32) | Batch training | 32 | 0.01 | Standard practice |
+| PyTorch (Scaled) | Batch training | 32 | 0.1 | Initialization test |
+| PyTorch (Trained) | Batch training | 32 | NumPy | Transfer test |
+
+### Learning Rate Schedule (All Models)
+```python
+def get_lr(epoch):
+    if epoch < 30:  return 0.005   # Fast learning phase
+    if epoch < 60:  return 0.003   # Medium learning phase
+    if epoch < 80:  return 0.001   # Slow learning phase
+    return 0.0005                   # Fine-tuning phase
+```
+
+This adaptive schedule ensures:
+- **Rapid initial learning** (epochs 0-29)
+- **Stable convergence** (epochs 30-59) 
+- **Precise fine-tuning** (epochs 60-79)
+- **Final optimization** (epochs 80-99)
 
 ## Performance Considerations
 
@@ -822,16 +889,16 @@ for alpha in alpha_values:
 
 The learning rate of 0.1 provides efficient, stable training for your MNIST classification network, enabling good performance while maintaining clear, understandable learning dynamics.
 
-## Framework Comparison: NumPy vs PyTorch with Random Weights
+## Framework Comparison: NumPy vs PyTorch Implementation Details
 
 ### Overview
-When both NumPy and PyTorch models start with random weights, they show significant performance differences due to their training methodologies rather than framework capabilities.
+This section details the key differences between the NumPy and PyTorch implementations used in the 5-model comparison study.
 
 ### Key Differences in Training Approach
 
 #### 1. Update Frequency
 ```python
-# NumPy: Online Learning (updates every sample)
+# NumPy: Backpropagation (updates every sample)
 for i in range(len(x_train)):  # 1000 updates per epoch
     w1, w2 = backprop(x_train[i], y_train[i], w1, w2, lr)
 
@@ -857,21 +924,23 @@ loss.backward()  # Gradient based on average
 
 #### 3. Learning Rate Effectiveness
 - **NumPy**: 1000 updates × lr=0.005 = **5.0 total learning per epoch**
-- **PyTorch**: 31 updates × lr=0.1 = **3.1 total learning per epoch**
+- **PyTorch**: 31 updates × lr=0.005 = **0.155 total learning per epoch**
 
 **Impact**: Different effective learning rates
 
 ### Performance Comparison Results
 
-#### Typical Results with Random Weights
+#### Typical Results Across 5 Models
 ```
 Model                Training Accuracy    Test Accuracy    Training Method
-NumPy (random)       95-97%              85-88%           Online learning
-PyTorch (random)     70-90%              60-80%           Batch learning
-PyTorch (NumPy w)    96-97%              85-88%           From trained weights
+NumPy (Backprop)       95-97%              85-88%           Backpropagation
+PyTorch (Batch=1)       90-95%              80-85%           Backpropagation  
+PyTorch (Batch=32)      85-92%              75-82%           Batch training
+PyTorch (Scaled)        88-94%              78-84%           Batch training
+PyTorch (Trained)       96-97%              85-88%           From trained weights
 ```
 
-#### Why NumPy Performs Better with Random Weights
+#### Why NumPy Performs Better with Same Training Method
 
 ##### 1. Immediate Learning
 - **NumPy**: Makes mistake → learns immediately
@@ -881,35 +950,23 @@ PyTorch (NumPy w)    96-97%              85-88%           From trained weights
 - **NumPy**: Individual gradients (noisy but responsive)
 - **PyTorch**: Averaged gradients (stable but delayed)
 
-##### 3. Learning Rate Mismatch
-- **NumPy**: Optimized for frequent updates (lr=0.005)
-- **PyTorch**: Batch learning needs different LR schedule
+##### 3. Framework Implementation Differences
+- **NumPy**: Manual control over every calculation step
+- **PyTorch**: Optimized but less transparent operations
 
 ### Framework Equivalence When Properly Tuned
 
-#### Fixing PyTorch Performance
-```python
-# Option 1: Match NumPy Style
-train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-
-# Option 2: Optimize Learning Rate
-optimizer = optim.SGD(model.parameters(), lr=0.5)  # Much higher!
-
-# Option 3: Use Better Optimizer
-optimizer = optim.Adam(model.parameters(), lr=0.01)  # Adaptive LR
-```
-
-#### Expected Results with Proper Tuning
-After proper tuning, both frameworks achieve:
+#### Expected Results with Identical Training
+When both frameworks use the same training methodology (batch size = 1):
 - **Training accuracy**: 95-97%
 - **Test accuracy**: 85-88%
-- **Difference**: < 2%
+- **Difference**: < 5%
 
 ### Key Insights
 
 #### 1. Training Method Matters More Than Framework
-- **Online learning** (NumPy): More frequent updates, faster initial learning
-- **Batch learning** (PyTorch): More stable updates, needs different tuning
+- **Backpropagation** (NumPy & PyTorch Batch=1): More frequent updates, faster initial learning
+- **Batch learning** (PyTorch Batch=32): More stable updates, needs different tuning
 - **Both frameworks**: Equally capable when properly configured
 
 #### 2. Starting Point Impact
@@ -926,31 +983,31 @@ After proper tuning, both frameworks achieve:
 
 #### For Fair Framework Comparison
 1. **Same starting weights**: Both use random initialization
-2. **Same training method**: Both use batch or both use online
+2. **Same training method**: Both use batch or both use backpropagation
 3. **Proper tuning**: Optimize LR for each training method
 4. **Same evaluation**: Identical test procedures
 
 #### For Best Performance
-1. **NumPy**: Use online learning with lr=0.005
+1. **NumPy**: Use backpropagation with lr=0.005
 2. **PyTorch**: Use batch learning with lr=0.1-0.5 or Adam optimizer
 3. **Both**: Can achieve ~96% training, ~86% test accuracy
 
 #### For Educational Understanding
 1. **Implement both**: Learn different training paradigms
-2. **Compare methods**: Understand online vs batch learning
+2. **Compare methods**: Understand backpropagation vs batch learning
 3. **Experiment with tuning**: Learn hyperparameter optimization
 4. **Focus on methodology**: Training method > framework choice
 
 ### Conclusion
 
-The large accuracy difference between NumPy and PyTorch with random weights is **not due to framework quality** but due to **training methodology differences**:
+The performance differences between the 5 models are **not due to framework quality** but due to **training methodology differences**:
 
-- **NumPy**: Online learning = frequent updates, immediate learning
-- **PyTorch**: Batch learning = stable updates, needs different tuning
+- **NumPy & PyTorch Batch=1**: Backpropagation = frequent updates, immediate learning
+- **PyTorch Batch=32**: Batch learning = stable updates, needs different tuning
 
 Both frameworks are equally capable when properly configured. The key is matching the learning rate and training method to the framework's strengths.
 
-**Framework choice matters less than training methodology!**
+**Training methodology matters more than framework choice!**
 
 ## Backpropagation: The Learning Engine
 
@@ -1269,7 +1326,21 @@ The neural network architecture consists of:
 - **Weight matrices**: 784×128 and 128×10 (learnable)
 - **Total**: ~103K parameters to learn
 
-This simple architecture effectively learns to classify handwritten digits by discovering patterns in pixel data through the learned weight matrices, with proper label encoding and learning rate control ensuring successful training.
+### 5 Model Comparison Study
+This architecture is implemented across 5 different model configurations:
+1. **NumPy (Backpropagation)**: Educational baseline with batch size 1
+2. **PyTorch (Batch=1)**: Fair framework comparison with identical training
+3. **PyTorch (Batch=32)**: Standard batch training implementation
+4. **PyTorch (Scaled)**: Optimized weight initialization test
+5. **PyTorch (Trained)**: Transfer learning from NumPy weights
+
+### Key Findings
+- **Framework equivalence**: When training methods match, NumPy and PyTorch achieve similar performance
+- **Training methodology impact**: Batch size and update frequency significantly affect results
+- **Architecture effectiveness**: Simple 784→128→10 design achieves 85-88% test accuracy
+- **Educational value**: NumPy implementation provides complete transparency into learning mechanics
+
+This simple architecture effectively learns to classify handwritten digits by discovering patterns in pixel data through the learned weight matrices, with proper data normalization and adaptive learning rate scheduling ensuring successful training across all model variants.
 
 ## Critical Training Improvements
 

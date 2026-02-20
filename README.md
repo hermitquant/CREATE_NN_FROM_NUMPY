@@ -12,20 +12,6 @@ This project provides a comprehensive comparison between NumPy and PyTorch neura
 - Provide insights into overfitting patterns across different implementations
 - Demonstrate the importance of training methodology over framework choice
 
-## Neural Network Architecture
-
-### Network Structure
-```
-Input Layer:    784 neurons (28x28 flattened pixels)
-Hidden Layer:   128 neurons with sigmoid activation
-Output Layer:   10 neurons (digits 0-9) with sigmoid activation
-```
-
-### Architecture Specifications
-- **Total Parameters**: ~103,000 (784x128 + 128x10 weights + biases)
-- **Activation Function**: Sigmoid (applied to both hidden and output layers)
-- **Input Normalization**: Pixel values normalized from [0, 255] to [0, 1]
-- **Weight Initialization**: Random normal distribution with configurable scale
 
 ## Design Choices and Rationale
 
@@ -82,12 +68,14 @@ Epochs 81-100: Learning Rate = 0.0005 (Fine-tuning phase)
 - **Training Method**: Backpropagation with batch size = 1
 - **Weight Scale**: 0.01
 - **Updates per Epoch**: 1000 (one per sample)
+- **Training Epochs**: 100
 - **Purpose**: Educational baseline and fair comparison reference
 
 ### 2. PyTorch Model - Batch Size 1 (Fair Comparison)
 - **Training Method**: Backpropagation with batch size = 1
 - **Weight Scale**: 0.01
 - **Updates per Epoch**: 1000 (matches NumPy exactly)
+- **Training Epochs**: 100
 - **Purpose**: Direct framework comparison under identical conditions
 - **Key Feature**: Eliminates training methodology differences to isolate framework effects
 
@@ -95,6 +83,7 @@ Epochs 81-100: Learning Rate = 0.0005 (Fine-tuning phase)
 - **Training Method**: Standard batch training
 - **Weight Scale**: 0.01
 - **Updates per Epoch**: ~31 (1000/32)
+- **Training Epochs**: 100
 - **Purpose**: Standard industry practice comparison
 - **Key Feature**: Leverages PyTorch's optimized batch processing capabilities
 
@@ -102,6 +91,7 @@ Epochs 81-100: Learning Rate = 0.0005 (Fine-tuning phase)
 - **Training Method**: Standard batch training
 - **Weight Scale**: 0.1 (10x larger than baseline)
 - **Updates per Epoch**: ~31
+- **Training Epochs**: 100
 - **Purpose**: Test initialization optimization impact
 - **Key Feature**: Investigates how weight initialization scale affects convergence speed and final performance
 
@@ -109,6 +99,7 @@ Epochs 81-100: Learning Rate = 0.0005 (Fine-tuning phase)
 - **Training Method**: Standard batch training
 - **Weight Scale**: Pre-trained weights from NumPy model
 - **Updates per Epoch**: ~31
+- **Training Epochs**: 100
 - **Purpose**: Test weight transferability and head start advantage
 - **Key Feature**: Demonstrates framework interoperability and transfer learning potential
 
