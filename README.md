@@ -62,6 +62,54 @@ Epochs 81-100: Learning Rate = 0.0005 (Fine-tuning phase)
 - Tests framework compatibility and transferability
 - Provides "head start" comparison
 
+## Neural Network Architecture
+
+For detailed technical specifications of the neural network architecture, including layer configurations, weight matrices, and implementation details, please refer to the [Architecture Documentation](architecture_of_nn.md).
+
+### Network Architecture Visualization
+
+```
+                    MNIST Neural Network Architecture
+                    ================================
+
+Input Layer (784 neurons)          Hidden Layer (128 neurons)          Output Layer (10 neurons)
+─────────────────────             ───────────────────────             ──────────────────────
+• P1  • P2  • P3  ...  • P784     • H1  • H2  • H3  ...  • H128     • D0  • D1  • D2  ...  • D9
+│     │     │         │          │     │     │         │          │     │     │         │
+│     │     │         │          │     │     │         │          │     │     │         │
+└─────┴─────┴─────┴─────┘          └─────┴─────┴─────┴─────┘          └─────┴─────┴─────┴─────┘
+         │                                   │                                   │
+         └───────────────────────────────────┼───────────────────────────────────┘
+                                             │
+                                    ┌────────┴────────┐
+                                    │  Weight Matrix  │
+                                    │   W1: 784×128   │
+                                    └─────────────────┘
+                                             │
+                                    ┌────────┴────────┐
+                                    │  Weight Matrix  │
+                                    │   W2: 128×10    │
+                                    └─────────────────┘
+
+Data Flow:
+28×28 Image → Flatten → [784 inputs] → W1 → [128 features] → Sigmoid → W2 → [10 outputs] → Sigmoid → Digit Prediction
+
+Total Parameters: ~103,000 (101,632 in W1 + 1,280 in W2 + biases)
+```
+
+### Network Structure
+```
+Input Layer:    784 neurons (28x28 flattened pixels)
+Hidden Layer:   128 neurons with sigmoid activation
+Output Layer:   10 neurons (digits 0-9) with sigmoid activation
+```
+
+### Architecture Specifications
+- **Total Parameters**: ~103,000 (784x128 + 128x10 weights + biases)
+- **Activation Function**: Sigmoid (applied to both hidden and output layers)
+- **Input Normalization**: Pixel values normalized from [0, 255] to [0, 1]
+- **Weight Initialization**: Random normal distribution with configurable scale
+
 ## Model Variations
 
 ### 1. NumPy Model (Baseline)
